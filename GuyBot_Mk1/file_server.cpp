@@ -1,6 +1,5 @@
 #include "file_server.h"
 
-
 #define DBG_OUTPUT_PORT Serial
 
 void BotWebServer::start()
@@ -77,7 +76,7 @@ void BotWebServer::start()
 }
 
 
-bool BotWebServer::update()
+void BotWebServer::update()
 {
   m_server.handleClient();
 }
@@ -134,7 +133,7 @@ bool BotWebServer::handleFileRead(String path)
     File file = SPIFFS.open(path, "r");
     size_t sent = m_server.streamFile(file, contentType);
     file.close();
-    return true;
+    return sent > 0;
   }
   return false;
 }
