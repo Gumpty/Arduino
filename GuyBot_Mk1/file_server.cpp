@@ -46,19 +46,14 @@ void BotWebServer::start()
   {
     String json = "{";
     json += "\"heap\":"+String(ESP.getFreeHeap());
-    json += ", \"analog\":"+String(analogRead(A0));
-    json += ", \"gpio\":"+String((uint32_t)(((GPI | GPO) & 0xFFFF) | ((GP16I & 0x01) << 16)));
+    json += ",\n \"analog\":"+String(analogRead(A0));
+    json += ",\n \"gpio\":"+String((uint32_t)(((GPI | GPO) & 0xFFFF) | ((GP16I & 0x01) << 16)));
     //json += ", \"gpio-in\":"+String((uint32_t)(((GPI) & 0xFFFF) | ((GP16I & 0x01) << 16)));
     //json += ", \"gpio-out\":"+String((uint32_t)(((GPO) & 0xFFFF) | ((GP16O & 0x01) << 16)));
 
-    //json += ", \"motors\":[";
-    //{"firstName":"John", "lastName":"Doe"}, 
-    //{"firstName":"Anna", "lastName":"Smith"}, 
-    //{"firstName":"Peter","lastName":"Jones"}    
-    //json += "]";
-
-    for( JSONProvider_t func : m_JSONProviders ) {
-        func( json );
+    for( JSONProvider* provider : m_JSONProviders ) 
+    {
+        provider->AppendMotorJSON( json );
     }
 
     /*for( int i = 0; i < 32; ++i )
@@ -96,7 +91,7 @@ String BotWebServer::formatBytes(size_t bytes)
 }
 
 
-void BotWebServer::AddJSONProvider( JSONProvider_t provider )
+void BotWebServer::AddJSONProvider( JSONProvider* provider )
 {
   m_JSONProviders.push_back( provider );
 }

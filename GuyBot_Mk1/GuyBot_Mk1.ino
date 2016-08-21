@@ -1,5 +1,5 @@
 
-#include "Arduino.h"
+#include <Arduino.h>
 
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
@@ -22,6 +22,9 @@ const int sdaPin = D2;
 BotWebServer g_WebServer;
 Adafruit_PWMServoDriver pwm;
 MotorControl g_MotorControl;
+
+MotorDevice_PCA9685_L9110S g_FrontLeftWheel;
+MotorDevice_PCA9685_L9110S g_FrontRightWheel;
 
 void setup(void)
 {
@@ -62,8 +65,20 @@ void setup(void)
   //pwm.setPWM(0, 0, 1024 );
 
   //JSONProvider_t func = 
-  g_WebServer.AddJSONProvider( std::bind( &MotorControl::AppendMotorJSON, g_MotorControl, std::placeholders::_1 ) );
+  
 
+  g_FrontLeftWheel.m_DirectionPin = 0;
+  g_FrontLeftWheel.m_SpeedPin = 1;
+  g_FrontRightWheel.m_DirectionPin = 2;
+  g_FrontRightWheel.m_SpeedPin = 3;
+  
+  g_MotorControl.AddMotor( "FrontLeft", g_FrontLeftWheel );
+  g_MotorControl.AddMotor( "FrontRight", g_FrontRightWheel );
+
+  g_MotorControl.SetMotorSpeed( "FrontLeft", 0 );
+  g_MotorControl.SetMotorSpeed( "FrontRight", 0 );
+
+  g_WebServer.AddJSONProvider( &g_MotorControl );
 }
 
 uint pwmnum=0;

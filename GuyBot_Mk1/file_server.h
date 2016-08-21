@@ -22,25 +22,25 @@
   access the sample web page at http://esp8266fs.local
   edit the page by going to http://esp8266fs.local/edit
 */
-#include "Arduino.h"
+#include <Arduino.h>
 
 #include <vector>
 
 #include <ESP8266WebServer.h>
 #include <FS.h>
 
+#include "config.h"
+
 class BotWebServer
 {
 public:
-  typedef std::function<void(String&)> JSONProvider_t;
-  //typedef void(*JSONProvider_t)(String&);
 
   void start();
   void update();
   
   String formatBytes(size_t bytes);
 
-  void AddJSONProvider( JSONProvider_t provider );
+  void AddJSONProvider( JSONProvider* provider );
 
 private:
 
@@ -54,7 +54,7 @@ private:
   void handlePinMode();
   void handlePinWrite();
 
-  std::vector<JSONProvider_t> m_JSONProviders;
+  std::vector<JSONProvider*> m_JSONProviders;
   
   //holds the current upload
   File m_fsUploadFile;
