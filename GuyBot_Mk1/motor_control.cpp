@@ -106,10 +106,10 @@ void MotorControl::AppendMotorJSON( String& json )
     }
     json += "{";
     json += "\"name\":";
-    json += String( motor.first );
+    json += "\"" + String( motor.first ) + "\"";
     json += ", ";
     json += "\"speed\":";
-    json += String( speed );
+    json += "\"" + String( speed ) + "\"";
     json += "}";
     
     bFirst = false;

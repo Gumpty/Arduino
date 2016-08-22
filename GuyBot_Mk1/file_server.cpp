@@ -97,6 +97,38 @@ void BotWebServer::AddJSONProvider( JSONProvider* provider )
 }
 
 
+void BotWebServer::AddRequestHandler( String name, HTTPMethod request, std::function<void(std::list<std::pair<String,String>>)> callback, std::list<String> args )
+{
+  test this
+  
+  String request_name = "/" + name;
+
+  m_server.on( request_name.c_str(), request, [&,this]()
+  {
+    DBG_OUTPUT_PORT.println("Custom web event " + name);
+
+    std::list<std::pair<String,String>> argList;
+
+    for( auto& arg : args )
+    {
+      if(!m_server.hasArg(arg)) {m_server.send(500, "text/plain", "BAD ARGS"); return;}
+
+      std::pair<String,String> currentArgPair;
+
+      String argValue = m_server.arg(arg);
+      currentArgPair.first = arg;
+      currentArgPair.second = argValue;
+      
+      DBG_OUTPUT_PORT.println( "Arg: " + arg + ", Value: " + argValue );
+
+      argList.push_back( currentArgPair );
+    }
+
+    callback( argList );
+    
+  });
+}
+
 String BotWebServer::getContentType(String filename)
 {
   if(m_server.hasArg("download")) return "application/octet-stream";

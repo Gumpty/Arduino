@@ -64,9 +64,6 @@ void setup(void)
 
   //pwm.setPWM(0, 0, 1024 );
 
-  //JSONProvider_t func = 
-  
-
   g_FrontLeftWheel.m_DirectionPin = 0;
   g_FrontLeftWheel.m_SpeedPin = 1;
   g_FrontRightWheel.m_DirectionPin = 2;

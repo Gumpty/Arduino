@@ -25,6 +25,9 @@
 #include <Arduino.h>
 
 #include <vector>
+#include <list>
+
+#include <functional>
 
 #include <ESP8266WebServer.h>
 #include <FS.h>
@@ -41,6 +44,8 @@ public:
   String formatBytes(size_t bytes);
 
   void AddJSONProvider( JSONProvider* provider );
+
+  void AddRequestHandler( String name, HTTPMethod request, std::function<void(std::list<std::pair<String,String>>)> callback, std::list<String> args );
 
 private:
 
