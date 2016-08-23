@@ -2,6 +2,8 @@
 
 #include "motor_control.h"
 
+#include <algorithm>
+
 /*
 class MotorDevice_PCA9685_L9110S : public IMotorDevice
 {
@@ -25,6 +27,8 @@ H   H   Off
 We recommend applying a PWM signal to input IA to control the motor speed and a digital output to input IB to control its direction.
 */
 
+static const char* k_SpeedKey = "name";
+static const char* k_SpeedValue = "value";
 
 motorspeed_t MotorDevice_PCA9685_L9110S::GetSpeed()
 {
@@ -59,6 +63,13 @@ void MotorDevice_PCA9685_L9110S::SetSpeed( motorspeed_t speed )
 }
 
 
+MotorControl::MotorControl()
+{
+  m_SpeedArgs.push_back( k_SpeedKey );
+  m_SpeedArgs.push_back( k_SpeedValue );
+}
+
+
 void MotorControl::AddMotor( const char* name, IMotorDevice& motor )
 {
   m_Motors[name] = &motor;
@@ -70,6 +81,40 @@ void MotorControl::RemoveMotor( const char* name )
 {
   m_Motors.erase( name );
   DBG_OUTPUT_PORT.println( "Removed motor " + String(name) + ". There are now " + m_Motors.size() + " motors." );
+}
+
+
+const std::list<String>& MotorControl::GetMotorSpeedArgs()
+{
+   return m_SpeedArgs;
+}
+
+
+void MotorControl::OnMotorSpeed( std::list<std::pair<String,String>> args )
+{
+  String nameValue;
+  auto name_it = std::find_if( args.begin(), args.end(), 
+  [](std::pair<String,String> const& arg) 
+  { 
+    return arg.first.equalsIgnoreCase( k_SpeedKey ); 
+  });
+  if( name_it != args.end() )
+  {
+    nameValue = (*name_it).second;
+  }
+
+  String speedValue;
+  auto speed_it = std::find_if( args.begin(), args.end(), 
+  [](std::pair<String,String> const& arg) 
+  { 
+    return arg.first.equalsIgnoreCase( k_SpeedValue ); 
+  });
+  if( speed_it != args.end() )
+  {
+    speedValue = (*speed_it).second;
+  }
+
+  SetMotorSpeed( nameValue.c_str(), speedValue.toInt() );
 }
 
 

@@ -14,8 +14,6 @@ extern "C" {
 #include "motor_control.h"
 #include "gpio.h"
 
-uint16_t g_aMotorValues[ 16 ] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
 const int sclPin = D1;
 const int sdaPin = D2;
 
@@ -76,6 +74,7 @@ void setup(void)
   g_MotorControl.SetMotorSpeed( "FrontRight", 0 );
 
   g_WebServer.AddJSONProvider( &g_MotorControl );
+  g_WebServer.AddRequestHandler( "motorcontrol", HTTP_POST, std::bind( &MotorControl::OnMotorSpeed, &g_MotorControl, std::placeholders::_1 ), g_MotorControl.GetMotorSpeedArgs() );
 }
 
 uint pwmnum=0;

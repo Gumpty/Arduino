@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <map>
+#include <list>
 
 typedef int motorspeed_t;
 
@@ -34,9 +35,13 @@ class MotorDevice_PCA9685_L9110S : public IMotorDevice
 class MotorControl : public JSONProvider
 {
 public:
+  explicit MotorControl();
+
   void AddMotor( const char* name, IMotorDevice& motor );
   void RemoveMotor( const char* name );
 
+  const std::list<String>& GetMotorSpeedArgs();
+  void OnMotorSpeed( std::list<std::pair<String,String>> args );
   void SetMotorSpeed( const char* name, motorspeed_t speed );
 
   // JSONProvider
@@ -46,4 +51,5 @@ private:
 
   Adafruit_PWMServoDriver m_PWMDriver;
   std::map< const char*, IMotorDevice* > m_Motors;
+  std::list<String> m_SpeedArgs;
 };

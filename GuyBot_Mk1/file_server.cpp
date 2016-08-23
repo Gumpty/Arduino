@@ -97,10 +97,8 @@ void BotWebServer::AddJSONProvider( JSONProvider* provider )
 }
 
 
-void BotWebServer::AddRequestHandler( String name, HTTPMethod request, std::function<void(std::list<std::pair<String,String>>)> callback, std::list<String> args )
+void BotWebServer::AddRequestHandler( String name, HTTPMethod request, std::function<void(std::list<std::pair<String,String>>)> callback, std::list<String> expected_args )
 {
-  test this
-  
   String request_name = "/" + name;
 
   m_server.on( request_name.c_str(), request, [&,this]()
@@ -109,7 +107,7 @@ void BotWebServer::AddRequestHandler( String name, HTTPMethod request, std::func
 
     std::list<std::pair<String,String>> argList;
 
-    for( auto& arg : args )
+    for( auto& arg : expected_args )
     {
       if(!m_server.hasArg(arg)) {m_server.send(500, "text/plain", "BAD ARGS"); return;}
 
