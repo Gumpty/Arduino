@@ -12,6 +12,7 @@ class IMotorDevice
 
   virtual motorspeed_t GetSpeed() = 0;
   virtual void SetSpeed( motorspeed_t speed ) = 0;
+  virtual void ApplySpeed() = 0;
 };
 
 class MotorDevice_PCA9685_L9110S : public IMotorDevice
@@ -25,6 +26,7 @@ class MotorDevice_PCA9685_L9110S : public IMotorDevice
   //IMotorDevice start
   virtual motorspeed_t GetSpeed();
   virtual void SetSpeed( motorspeed_t speed );
+  virtual void ApplySpeed();
   //IMotorDevice end
 
   motorspeed_t m_Speed;
@@ -47,9 +49,11 @@ public:
   // JSONProvider
   virtual void AppendMotorJSON( String& json );
 
+  void Update();
+
 private:
 
   Adafruit_PWMServoDriver m_PWMDriver;
-  std::map< const char*, IMotorDevice* > m_Motors;
+  std::map< const char *, IMotorDevice* > m_Motors;
   std::list<String> m_SpeedArgs;
 };

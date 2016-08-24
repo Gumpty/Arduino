@@ -2,7 +2,6 @@
 #include <Arduino.h>
 
 #include <Wire.h>
-#include <Adafruit_PWMServoDriver.h>
 
 extern "C" {
 #include "user_interface.h"
@@ -17,8 +16,15 @@ extern "C" {
 const int sclPin = D1;
 const int sdaPin = D2;
 
+static const int g_FrontLeftNameIndex = 0;
+static const int g_FrontRightNameIndex = 1;
+
+static const char* g_MotorNames[] = {
+  "FrontLeft",
+  "FrontRight"
+};
+
 BotWebServer g_WebServer;
-Adafruit_PWMServoDriver pwm;
 MotorControl g_MotorControl;
 
 MotorDevice_PCA9685_L9110S g_FrontLeftWheel;
@@ -47,11 +53,10 @@ void setup(void)
   }
 
   connect_wifi();
-
-  g_WebServer.start();
   
   Wire.pins(sdaPin, sclPin);
 
+/*
   pwm.begin();
   pwm.setPWMFreq(60);  // 1600 is the maximum PWM frequency
 
@@ -59,7 +64,7 @@ void setup(void)
   {
     pwm.setPWM(pwmnum, 0, 0 );
   }
-
+*/
   //pwm.setPWM(0, 0, 1024 );
 
   g_FrontLeftWheel.m_DirectionPin = 0;
@@ -67,14 +72,16 @@ void setup(void)
   g_FrontRightWheel.m_DirectionPin = 2;
   g_FrontRightWheel.m_SpeedPin = 3;
   
-  g_MotorControl.AddMotor( "FrontLeft", g_FrontLeftWheel );
-  g_MotorControl.AddMotor( "FrontRight", g_FrontRightWheel );
+  g_MotorControl.AddMotor( g_MotorNames[ g_FrontLeftNameIndex ], g_FrontLeftWheel );
+  g_MotorControl.AddMotor( g_MotorNames[ g_FrontRightNameIndex ], g_FrontRightWheel );
 
-  g_MotorControl.SetMotorSpeed( "FrontLeft", 0 );
-  g_MotorControl.SetMotorSpeed( "FrontRight", 0 );
+  g_MotorControl.SetMotorSpeed( g_MotorNames[ g_FrontLeftNameIndex ], 0 );
+  g_MotorControl.SetMotorSpeed( g_MotorNames[ g_FrontRightNameIndex ], 0 );
 
   g_WebServer.AddJSONProvider( &g_MotorControl );
-  g_WebServer.AddRequestHandler( "motorcontrol", HTTP_POST, std::bind( &MotorControl::OnMotorSpeed, &g_MotorControl, std::placeholders::_1 ), g_MotorControl.GetMotorSpeedArgs() );
+  g_WebServer.AddRequestHandler( "motorspeed", HTTP_POST, std::bind( &MotorControl::OnMotorSpeed, &g_MotorControl, std::placeholders::_1 ), g_MotorControl.GetMotorSpeedArgs() );
+
+  g_WebServer.start();
 }
 
 uint pwmnum=0;
@@ -85,10 +92,13 @@ void loop(void) {
   //DBG_OUTPUT_PORT.println("Hello World.");
   g_WebServer.update();
 
+  g_MotorControl.Update();
+/*
   for (uint8_t pwmnum=0; pwmnum < 16; pwmnum++) 
   {
     pwm.setPWM(pwmnum, 0, 0 );
   }
+/*
   
   //delay(1000);
   //yield();

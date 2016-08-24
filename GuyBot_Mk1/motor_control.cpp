@@ -50,14 +50,24 @@ void MotorDevice_PCA9685_L9110S::SetSpeed( motorspeed_t speed )
     m_Speed = speed;
   }
 
-  if( speed >= 0 )
+  ApplySpeed();
+}
+
+
+void MotorDevice_PCA9685_L9110S::ApplySpeed()
+{
+  if( m_Speed >= 0 )
   {
+    //DBG_OUTPUT_PORT.println("MotorDevice_PCA9685_L9110S::SetSpeed " + String(m_DirectionPin) + " " + String(k_Forward));
     digitalWrite( m_DirectionPin, k_Forward );
+    //DBG_OUTPUT_PORT.println("MotorDevice_PCA9685_L9110S::SetSpeed " + String(m_SpeedPin) + " " + String(m_Speed));
     digitalWrite( m_SpeedPin, m_Speed );
   }
   else
   {
+    //DBG_OUTPUT_PORT.println("MotorDevice_PCA9685_L9110S::SetSpeed " + String(m_DirectionPin) + " " + String(k_Reverse));
     digitalWrite( m_DirectionPin, k_Reverse );
+    //DBG_OUTPUT_PORT.println("MotorDevice_PCA9685_L9110S::SetSpeed " + String(m_SpeedPin) + " " + String(-m_Speed));
     digitalWrite( m_SpeedPin, -m_Speed );
   }
 }
@@ -70,17 +80,17 @@ MotorControl::MotorControl()
 }
 
 
-void MotorControl::AddMotor( const char* name, IMotorDevice& motor )
+void MotorControl::AddMotor( const char * name, IMotorDevice& motor )
 {
-  m_Motors[name] = &motor;
-  DBG_OUTPUT_PORT.println( "Added motor " + String(name) + ". There are now " + m_Motors.size() + " motors." );
+  m_Motors[ name ] = &motor;
+  DBG_OUTPUT_PORT.println( "Added motor " + String( name ) + ". There are now " + m_Motors.size() + " motors." );
 }
 
 
 void MotorControl::RemoveMotor( const char* name )
 {
   m_Motors.erase( name );
-  DBG_OUTPUT_PORT.println( "Removed motor " + String(name) + ". There are now " + m_Motors.size() + " motors." );
+  DBG_OUTPUT_PORT.println( "Removed motor " + String( name ) + ". There are now " + m_Motors.size() + " motors." );
 }
 
 
@@ -92,6 +102,8 @@ const std::list<String>& MotorControl::GetMotorSpeedArgs()
 
 void MotorControl::OnMotorSpeed( std::list<std::pair<String,String>> args )
 {
+  DBG_OUTPUT_PORT.println( "MotorControl::OnMotorSpeed" );
+  
   String nameValue;
   auto name_it = std::find_if( args.begin(), args.end(), 
   [](std::pair<String,String> const& arg) 
@@ -120,10 +132,17 @@ void MotorControl::OnMotorSpeed( std::list<std::pair<String,String>> args )
 
 void MotorControl::SetMotorSpeed( const char* name, motorspeed_t speed )
 {
-  std::map< const char*, IMotorDevice* >::iterator it = m_Motors.find( name );
+  DBG_OUTPUT_PORT.println( "MotorControl::SetMotorSpeed - motor: " + String( name ) + " speed: " + String( speed ) );
+  
+  std::map< const char*, IMotorDevice* >::iterator it = std::find_if( m_Motors.begin(), m_Motors.end(), 
+  [ name ](std::pair< String, IMotorDevice* > const& motor) 
+  { 
+    return motor.first.equalsIgnoreCase( name ); 
+  });
+  
   if ( it != m_Motors.end() )
   {
-    m_Motors.at( name )->SetSpeed( speed );
+    (*it).second->SetSpeed( speed );
 
     DBG_OUTPUT_PORT.println( "Motor " + String(name) + " speed set to " + String(speed) );
   }
@@ -136,8 +155,8 @@ void MotorControl::SetMotorSpeed( const char* name, motorspeed_t speed )
 
 void MotorControl::AppendMotorJSON( String& json )
 {
-  DBG_OUTPUT_PORT.println( "Appending motors to JSON" );
-  DBG_OUTPUT_PORT.println( "There are " + String(m_Motors.size()) + " motors." );
+  //DBG_OUTPUT_PORT.println( "Appending motors to JSON" );
+  //DBG_OUTPUT_PORT.println( "There are " + String(m_Motors.size()) + " motors." );
   
   json += ",\n \"motors\":[\n";
 
@@ -162,6 +181,15 @@ void MotorControl::AppendMotorJSON( String& json )
     
   json += "]";
 
-  DBG_OUTPUT_PORT.println( json );
+  //DBG_OUTPUT_PORT.println( json );
+}
+
+
+void MotorControl::Update()
+{
+  for( std::pair<const char* const, IMotorDevice*> motor : m_Motors )
+  {
+    motor.second->ApplySpeed();
+  }
 }
 

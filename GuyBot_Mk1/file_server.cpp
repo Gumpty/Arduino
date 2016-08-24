@@ -101,14 +101,18 @@ void BotWebServer::AddRequestHandler( String name, HTTPMethod request, std::func
 {
   String request_name = "/" + name;
 
-  m_server.on( request_name.c_str(), request, [&,this]()
+  DBG_OUTPUT_PORT.println("AddRequestHandler " + request_name);
+
+  m_server.on( request_name.c_str(), request, [ this, request_name, callback, expected_args ]()
   {
-    DBG_OUTPUT_PORT.println("Custom web event " + name);
+    DBG_OUTPUT_PORT.println( "Custom web event " + request_name );
 
     std::list<std::pair<String,String>> argList;
 
     for( auto& arg : expected_args )
     {
+      DBG_OUTPUT_PORT.println( arg );
+      
       if(!m_server.hasArg(arg)) {m_server.send(500, "text/plain", "BAD ARGS"); return;}
 
       std::pair<String,String> currentArgPair;
@@ -117,11 +121,12 @@ void BotWebServer::AddRequestHandler( String name, HTTPMethod request, std::func
       currentArgPair.first = arg;
       currentArgPair.second = argValue;
       
-      DBG_OUTPUT_PORT.println( "Arg: " + arg + ", Value: " + argValue );
+      DBG_OUTPUT_PORT.println( "Arg key: " + arg + ", value: " + argValue );
 
       argList.push_back( currentArgPair );
     }
 
+    DBG_OUTPUT_PORT.println( "Calling callback" );
     callback( argList );
     
   });
